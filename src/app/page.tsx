@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { TelemetryProvider } from '../lib/contexts/TelemetryContext';
 import TelemetryDisplay from '../components/TelemetryDisplay';
@@ -5,25 +7,99 @@ import TelemetryCharts from '../components/TelemetryCharts';
 import Trajectory3D from '../components/Trajectory3D';
 import ControlPanel from '../components/ControlPanel';
 
+// MUI components
+import { 
+  Box, 
+  Container, 
+  Grid, 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Paper
+} from '@mui/material';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+
 export default function Home() {
   return (
     <TelemetryProvider>
-      <div className="min-h-screen bg-gray-100 p-4">
-        <header className="bg-blue-700 text-white p-4 mb-4 rounded shadow">
-          <h1 className="text-2xl font-bold">Rocket Ground Station</h1>
-        </header>
+      <Box sx={{ height: '100%', overflowY: 'scroll'}}>
+        {/* <AppBar position="static" color="primary" elevation={0} sx={{ height: '50px' }}>
+          <Toolbar variant="dense">
+            <RocketLaunchIcon sx={{ mr: 1 }} />
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Rocket Ground Station
+            </Typography>
+          </Toolbar>
+        </AppBar> */}
+        
 
-        <div className="grid grid-cols-1 gap-4">
-          <ControlPanel />
+        {/* Container */}
+        <Box sx={{ 
+          height: 'calc(100% -  0px)', // Adjust for AppBar height
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {/* Control Panel - Top Row - More compact */}
+           <Box sx={{}}>
+            <Paper 
+              sx={{ 
+                p: 1,
+                m: 1,
+                mb: 0,
+              }}
+            >
+              <ControlPanel />
+            </Paper>
+          </Box>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <TelemetryDisplay />
-            <TelemetryCharts />
-          </div>
+          {/* Main Content Area */}
+          <Box sx = {{flex: 1, flexDirection: 'row', display: 'flex'}}>
+            <Box 
+              sx={{ 
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
 
-          <Trajectory3D />
-        </div>
-      </div>
+              }}
+            >
+              <Paper sx={{ 
+                p: 1,
+                m: 1,
+                mb: 0.5,
+                mr: 0.5,
+                flex: 1,
+              }}>
+                <TelemetryDisplay />
+              </Paper>
+              <Paper sx={{ 
+                p: 1,
+                m: 1,
+                mt: 0.5,
+                mr: 0.5,
+                flex: 4,
+              }}>
+                <Trajectory3D />
+              </Paper>
+            </Box>
+            <Paper 
+              sx={{ 
+                p: 1,
+                m: 1,
+                ml: 0.5,
+                flex: 1,
+              }}
+            >
+              <TelemetryCharts />
+            </Paper>
+          </Box>
+          
+          {/* Main Content Area - New Layout */}
+          {/* 
+          
+           */}
+          
+        </Box>
+      </Box>
     </TelemetryProvider>
   );
 }

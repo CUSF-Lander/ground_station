@@ -3,6 +3,32 @@
 import React, { useState } from 'react';
 import { useTelemetry } from '../lib/contexts/TelemetryContext';
 
+// MUI components
+import {
+  Box,
+  Typography,
+  Button,
+  ToggleButton,
+  ToggleButtonGroup,
+  Slider,
+  Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Divider,
+  IconButton
+} from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import StopIcon from '@mui/icons-material/Stop';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import SpeedIcon from '@mui/icons-material/Speed';
+
 const ControlPanel: React.FC = () => {
   const {
     isLiveMode,
@@ -29,8 +55,6 @@ const ControlPanel: React.FC = () => {
       const file = e.target.files[0];
       setSelectedLogFile(file.name);
       
-      // In a real implementation, you'd read the file and load it
-      // For now we'll just use the name as a mock path
       if (isLiveMode) {
         setLiveMode(false);
       }
@@ -38,172 +62,204 @@ const ControlPanel: React.FC = () => {
     }
   };
 
-  const handleModeSwitch = (mode: 'live' | 'playback') => {
-    setLiveMode(mode === 'live');
-  };
-
-  const handlePlaybackSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePlaybackSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPlaybackSpeed(Number(e.target.value));
   };
 
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSliderChange = (event: Event, newValue: number | number[]) => {
     if (logData.length > 0) {
-      const index = parseInt(e.target.value, 10);
-      setCurrentLogIndex(index);
+      setCurrentLogIndex(newValue as number);
     }
   };
 
   return (
-    <div className="p-4 border rounded shadow-sm bg-white">
-      <div className="flex flex-wrap justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Control Panel</h2>
-        
-        <div className="flex space-x-2">
-          <button
-            className={`px-3 py-1 rounded ${isLiveMode ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            onClick={() => handleModeSwitch('live')}
-          >
-            Live Mode
-          </button>
-          <button
-            className={`px-3 py-1 rounded ${!isLiveMode ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-            onClick={() => handleModeSwitch('playback')}
-          >
-            Playback Mode
-          </button>
-        </div>
-      </div>
-
-      {/* Live Mode Controls */}
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column'}}>
+      <Box sx={{ display: 'flex', flexDirection: 'row'}}>
+        {/* Live Mode Controls */}
       {isLiveMode && (
-        <div className="border rounded p-3 bg-gray-50">
-          <div className="flex justify-between items-center">
-            <h3 className="font-medium">Live Data Controls</h3>
-            
-            <div>
-              {isLogging ? (
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  onClick={stopLogging}
-                >
-                  Stop Recording
-                </button>
-              ) : (
-                <button
-                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
-                  onClick={startLogging}
-                >
-                  Start Recording
-                </button>
-              )}
-            </div>
-          </div>
+        <Box sx={{flex: 1}}>
+          {isLogging ? (
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<StopIcon />}
+              onClick={stopLogging}
+              size="small"
+            >
+              Stop Recording
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<FiberManualRecordIcon sx={{ animation: 'pulse 1.5s infinite' }} />}
+              onClick={startLogging}
+              size="small"
+            >
+              Start Recording
+            </Button>
+          )}
 
           {isLogging && logFilePath && (
-            <div className="mt-2 text-sm text-gray-600">
-              Recording to: {logFilePath}
-            </div>
+            <Chip 
+              label={`Recording to: ${logFilePath}`} 
+              color="info" 
+              size="small" 
+              variant="outlined" 
+              sx={{ mb: 1 }}
+            />
           )}
-          
-          <div className="mt-4 text-sm">
-            <p>Connect additional hardware:</p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              <button className="border px-2 py-1 rounded bg-white hover:bg-gray-100">
-                Configure LoRa
-              </button>
-              <button className="border px-2 py-1 rounded bg-white hover:bg-gray-100">
-                Configure RTK GPS
-              </button>
-            </div>
-          </div>
-        </div>
+          {/* <Button 
+            variant="outlined" 
+            size="small" 
+            startIcon={<SignalCellularAltIcon />}
+          >
+            Configure LoRa
+          </Button>
+          <Button 
+            variant="outlined" 
+            size="small" 
+            startIcon={<GpsFixedIcon />}
+          >
+            Configure RTK GPS
+          </Button> */}
+        </Box>
       )}
 
       {/* Playback Mode Controls */}
       {!isLiveMode && (
-        <div className="border rounded p-3 bg-gray-50">
-          <div className="flex flex-wrap justify-between items-center mb-2">
-            <h3 className="font-medium">Playback Controls</h3>
-            
-            <div className="flex space-x-2">
-              <label className="flex items-center">
-                <span className="mr-2 text-sm">Speed:</span>
-                <select 
-                  className="border rounded px-2 py-1"
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ width: '60%', display: 'block'}}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="subtitle1">
+                Playback Controls
+              </Typography>
+              
+              <FormControl sx={{ width: 120 }} size="small">
+                <InputLabel id="speed-select-label">Speed</InputLabel>
+                <Select
+                  labelId="speed-select-label"
                   value={playbackSpeed}
-                  onChange={handlePlaybackSpeedChange}
+                  label="Speed"
+                  onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
                 >
-                  <option value={0.25}>0.25x</option>
-                  <option value={0.5}>0.5x</option>
-                  <option value={1}>1x</option>
-                  <option value={2}>2x</option>
-                  <option value={4}>4x</option>
-                </select>
-              </label>
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <input
-              type="file"
-              id="logFile"
-              accept=".json,.csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <label
-              htmlFor="logFile"
-              className="cursor-pointer inline-block bg-blue-100 hover:bg-blue-200 border border-blue-300 text-blue-800 px-3 py-1 rounded"
-            >
-              Load Log File
-            </label>
-            {selectedLogFile && (
-              <span className="ml-2 text-sm text-gray-600">
-                Selected: {selectedLogFile}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-2 mb-2">
-            {isPlaying ? (
-              <button
-                className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
-                onClick={pauseLog}
+                  <MenuItem value={0.25}>0.25x</MenuItem>
+                  <MenuItem value={0.5}>0.5x</MenuItem>
+                  <MenuItem value={1}>1x</MenuItem>
+                  <MenuItem value={2}>2x</MenuItem>
+                  <MenuItem value={4}>4x</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+            
+            <Box sx={{ mb: 2 }}>
+              <input
+                type="file"
+                id="logFile"
+                accept=".json,.csv"
+                style={{ display: 'none' }}
+                onChange={handleFileChange}
+              />
+              <Button
+                component="label"
+                htmlFor="logFile"
+                variant="outlined"
+                startIcon={<UploadFileIcon />}
+                size="small"
               >
-                Pause
-              </button>
-            ) : (
-              <button
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
-                onClick={playLog}
+                Load Log File
+              </Button>
+              {selectedLogFile && (
+                <Chip 
+                  label={selectedLogFile} 
+                  size="small" 
+                  color="secondary" 
+                  sx={{ ml: 1 }} 
+                />
+              )}
+            </Box>
+            
+            <Stack direction="row" spacing={1} alignItems="center" sx={{display: 'inline-block'}}>
+              <IconButton 
+                color="primary" 
+                onClick={isPlaying ? pauseLog : playLog}
                 disabled={logData.length === 0}
               >
-                Play
-              </button>
-            )}
-            
-            {logData.length > 0 && (
-              <span className="text-sm">
-                Frame {currentLogIndex + 1} of {logData.length}
-              </span>
-            )}
-          </div>
+                {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+              </IconButton>
+              
+              {logData.length > 0 && (
+                <Typography variant="body2" sx={{ minWidth: 100 }}>
+                  Frame {currentLogIndex + 1} of {logData.length}
+                </Typography>
+              )}
+              
+              <Box sx={{ width: '100%' }}>
+                {logData.length > 0 && (
+                  <Slider
+                    size="small"
+                    min={0}
+                    max={logData.length - 1}
+                    value={currentLogIndex}
+                    onChange={handleSliderChange}
+                    aria-label="Playback position"
+                  />
+                )}
+              </Box>
+            </Stack>
+          </Box>
           
-          {logData.length > 0 && (
-            <div>
-              <input
-                type="range"
-                min={0}
-                max={logData.length - 1}
-                value={currentLogIndex}
-                onChange={handleSliderChange}
-                className="w-full"
-              />
-            </div>
-          )}
-        </div>
+          <Box sx={{ width: '40%', textAlign: 'center' }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Playback Info
+            </Typography>
+            
+            {logData.length > 0 ? (
+              <Stack spacing={1}>
+                <Chip 
+                  icon={<SpeedIcon />}
+                  label={`${logData.length} data points`} 
+                  color="info" 
+                  size="small" 
+                />
+                <Button 
+                  variant="outlined" 
+                  size="small" 
+                  disabled={logData.length === 0}
+                >
+                  Export Analysis
+                </Button>
+              </Stack>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No log data loaded
+              </Typography>
+            )}
+          </Box>
+        </Box>
       )}
-    </div>
+
+
+      
+        <Box>
+          <ToggleButtonGroup
+            value={isLiveMode ? 'live' : 'playback'}
+            exclusive
+            onChange={(e, value) => value && setLiveMode(value === 'live')}
+            size="small"
+          >
+            <ToggleButton value="live" color="primary">
+              Live Mode
+            </ToggleButton>
+            <ToggleButton value="playback" color="primary">
+              Playback Mode
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+      </Box>
+      
+      
+    </Box>
   );
 };
 

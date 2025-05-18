@@ -4,15 +4,38 @@ import React from 'react';
 import { useTelemetry } from '../lib/contexts/TelemetryContext';
 import { formatDate } from '@/lib/utils/dateUtils';
 
+// MUI components
+import {
+  Box,
+  Typography,
+  Stack,
+  Chip,
+  Paper,
+  Grid
+} from '@mui/material';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import SensorsIcon from '@mui/icons-material/Sensors';
+import SpeedIcon from '@mui/icons-material/Speed';
+import ExploreIcon from '@mui/icons-material/Explore';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import RotateRightIcon from '@mui/icons-material/RotateRight';
+import HeightIcon from '@mui/icons-material/Height';
+
 const TelemetryDisplay: React.FC = () => {
   const { latestData, isLiveMode } = useTelemetry();
 
   if (!latestData) {
     return (
-      <div className="p-4 border rounded shadow-sm bg-gray-50">
-        <h2 className="text-xl font-semibold mb-4">Telemetry Data</h2>
-        <p>No data available. {isLiveMode ? 'Waiting for data...' : 'Please load a log file.'}</p>
-      </div>
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Telemetry Data
+        </Typography>
+        <Paper sx={{ p: 1, bgcolor: 'background.paper', textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            {isLiveMode ? 'Waiting for data...' : 'Please load a log file.'}
+          </Typography>
+        </Paper>
+      </Box>
     );
   }
 
@@ -37,111 +60,164 @@ const TelemetryDisplay: React.FC = () => {
   };
 
   return (
-    <div className="p-4 border rounded shadow-sm bg-gray-50">
-      <h2 className="text-xl font-semibold mb-4">Telemetry Data</h2>
-      <p className="text-sm text-gray-500 mb-4">
-        Timestamp: {formatDate(timestamp)}
-      </p>
+    <Box sx={{ p: 0 }}>
+      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+        <Typography variant="subtitle1">Telemetry</Typography>
+        <Chip
+          size="small"
+          icon={<ScheduleIcon sx={{ fontSize: '0.8rem' }} />}
+          label={formatDate(timestamp)}
+          color="primary"
+          variant="outlined"
+          sx={{ height: 22 }}
+        />
+      </Stack>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* LoRa Data Section */}
-        <div className="border rounded p-3">
-          <h3 className="font-medium text-blue-600 mb-2">Rocket Data (LoRa)</h3>
+      <Grid container spacing={1}>
+        {/* Left Column - LoRa Data */}
+        <Grid item xs={6}>
           {!lora ? (
-            <p>No LoRa data available</p>
+            <Typography variant="caption" color="text.secondary">No data</Typography>
           ) : (
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-medium">Euler Counter: {lora.eulerCounter ?? "N/A"}</p>
-              </div>
+            <Stack spacing={0.5}>
+              {/* Euler and System Info combined */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`EC: ${lora.eulerCounter ?? "N/A"}`} sx={{ height: 20, fontSize: '0.7rem' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Heap: ${lora.freeHeapSize ?? "N/A"}`} sx={{ height: 20, fontSize: '0.7rem' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Srv: ${safeFormat(lora.servoMotorAngle, 1)}°`} sx={{ height: 20, fontSize: '0.7rem' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
               
-              <div>
-                <p className="text-sm font-medium">Euler Angles (degrees):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X (Roll): {safeFormat(lora.eulerAngles?.x)}°</li>
-                  <li>Y (Pitch): {safeFormat(lora.eulerAngles?.y)}°</li>
-                  <li>Z (Yaw): {safeFormat(lora.eulerAngles?.z)}°</li>
-                </ul>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Velocity (m/s):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X: {safeFormat(lora.velocity?.x)}</li>
-                  <li>Y: {safeFormat(lora.velocity?.y)}</li>
-                  <li>Z: {safeFormat(lora.velocity?.z)}</li>
-                  <li>Magnitude: {calculateMagnitude(lora.velocity)}</li>
-                </ul>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Gravity (m/s²):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X: {safeFormat(lora.gravity?.x)}</li>
-                  <li>Y: {safeFormat(lora.gravity?.y)}</li>
-                  <li>Z: {safeFormat(lora.gravity?.z)}</li>
-                </ul>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Angular Acceleration (rad/s²):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X: {safeFormat(lora.angularAcceleration?.x)}</li>
-                  <li>Y: {safeFormat(lora.angularAcceleration?.y)}</li>
-                  <li>Z: {safeFormat(lora.angularAcceleration?.z)}</li>
-                </ul>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Linear Acceleration (m/s²):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X: {safeFormat(lora.linearAcceleration?.x)}</li>
-                  <li>Y: {safeFormat(lora.linearAcceleration?.y)}</li>
-                  <li>Z: {safeFormat(lora.linearAcceleration?.z)}</li>
-                  <li>Magnitude: {calculateMagnitude(lora.linearAcceleration)}</li>
-                </ul>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Free Heap Size: {lora.freeHeapSize ?? "N/A"} bytes</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Servo Motor Angle: {safeFormat(lora.servoMotorAngle, 1)}°</p>
-              </div>
-            </div>
+              {/* Euler Angles */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <RotateRightIcon sx={{ mr: 0.5, fontSize: 14 }} />
+                  Euler (°)
+                </Typography>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`X: ${safeFormat(lora.eulerAngles?.x)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Y: ${safeFormat(lora.eulerAngles?.y)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Z: ${safeFormat(lora.eulerAngles?.z)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Stack>
           )}
-        </div>
+        </Grid>
 
-        {/* RTK Data Section */}
-        <div className="border rounded p-3">
-          <h3 className="font-medium text-green-600 mb-2">External Position (RTK GPS)</h3>
-          {!rtk ? (
-            <p>No RTK data available</p>
+        {/* Middle Column - LoRa Data Cont */}
+        <Grid item xs={6}>
+          {!lora ? (
+            <Typography variant="caption" color="text.secondary">No data</Typography>
           ) : (
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-medium">Position:</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X: {safeFormat(rtk.position?.x)} m</li>
-                  <li>Y: {safeFormat(rtk.position?.y)} m</li>
-                  <li>Z (Altitude): {safeFormat(rtk.position?.z)} m</li>
-                </ul>
-              </div>
+            <Stack spacing={0.5}>
               
-              <div>
-                <p className="text-sm font-medium">Orientation (degrees):</p>
-                <ul className="list-disc list-inside text-sm ml-2">
-                  <li>X (Roll): {safeFormat(rtk.orientation?.x)}°</li>
-                  <li>Y (Pitch): {safeFormat(rtk.orientation?.y)}°</li>
-                  <li>Z (Yaw): {safeFormat(rtk.orientation?.z)}°</li>
-                </ul>
-              </div>
-            </div>
+              {/* Velocity */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <SpeedIcon sx={{ mr: 0.5, fontSize: 14 }} />
+                  Velocity (m/s)
+                </Typography>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`X: ${safeFormat(lora.velocity?.x)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`Y: ${safeFormat(lora.velocity?.y)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`Z: ${safeFormat(lora.velocity?.z)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" color="primary" label={`|v|: ${calculateMagnitude(lora.velocity)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
+              
+              {/* Linear Acceleration */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Typography variant="caption" sx={{ mb: 0.5 }}>
+                  Linear Accel (m/s²)
+                </Typography>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`X: ${safeFormat(lora.linearAcceleration?.x)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`Y: ${safeFormat(lora.linearAcceleration?.y)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" label={`Z: ${safeFormat(lora.linearAcceleration?.z)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <Chip size="small" color="primary" label={`|a|: ${calculateMagnitude(lora.linearAcceleration)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Stack>
           )}
-        </div>
-      </div>
-    </div>
+        </Grid>
+
+        {/* Right Column - RTK Data */}
+        <Grid item xs={6}>
+          {!rtk ? (
+            <Typography variant="caption" color="text.secondary">No RTK data</Typography>
+          ) : (
+            <Stack spacing={0.5}>
+              {/* Position */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <ExploreIcon sx={{ mr: 0.5, fontSize: 14 }} />
+                  Position (m)
+                </Typography>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`X: ${safeFormat(rtk.position?.x)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Y: ${safeFormat(rtk.position?.y)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" color="secondary" label={`Alt: ${safeFormat(rtk.position?.z)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
+              
+              {/* Orientation */}
+              <Paper variant="outlined" sx={{ p: 0.5 }}>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <HeightIcon sx={{ mr: 0.5, fontSize: 14 }} />
+                  Orientation (°)
+                </Typography>
+                <Grid container spacing={0.5}>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`X: ${safeFormat(rtk.orientation?.x)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Y: ${safeFormat(rtk.orientation?.y)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Chip size="small" label={`Z: ${safeFormat(rtk.orientation?.z)}`} sx={{ height: 20, fontSize: '0.7rem', width: '100%' }} />
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Stack>
+          )}
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
